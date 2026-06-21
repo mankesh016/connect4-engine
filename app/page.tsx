@@ -1,19 +1,22 @@
+"use client";
+
 import Board from "@/components/Board";
+import { useGame } from "@/hooks/useGame";
 
 export default function Home() {
-  // Hardcoded 6x7 board some discs:
-  // 0 = empty
-  // 1 = Red (Player 1)
-  // 2 = Yellow (Player 2)
+  const { board, currentPlayer, winner, winningCells, makeMove, resetGame } =
+    useGame();
 
-  const staticBoard = [
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 2, 1, 0, 0],
-    [0, 0, 0, 1, 2, 0, 0],
-  ];
+  let statusText = "";
+  if (winner === 1) {
+    statusText = "Red wins!";
+  } else if (winner === 2) {
+    statusText = "Yellow wins!";
+  } else if (winner === "draw") {
+    statusText = "It's a draw!";
+  } else {
+    statusText = currentPlayer === 1 ? "Red's turn" : "Yellow's turn";
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8 text-black">
@@ -22,9 +25,36 @@ export default function Home() {
           Connect 4 Engine
         </h1>
 
-        <div className="text-lg font-semibold text-gray-700">Player 1 turn</div>
+        {/* Turn or result status */}
+        <div className="text-lg font-semibold text-gray-700" id="game-status">
+          {statusText}
+        </div>
 
-        <Board board={staticBoard} winningCells={[[5, 4]]} />
+        {/* Column buttons */}
+        <div className="flex flex-col items-center select-none">
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {Array.from({ length: 7 }).map((_, colIdx) => (
+              <button
+                key={colIdx}
+                onClick={() => makeMove(colIdx)}
+                disabled={winner !== null}
+                className="w-12 h-8 flex items-center justify-center font-bold bg-gray-200 border border-gray-300 hover:bg-gray-300 rounded text-black text-sm disabled:opacity-50 cursor-pointer"
+              >
+                {colIdx}
+              </button>
+            ))}
+          </div>
+
+          <Board board={board} winningCells={winningCells} />
+        </div>
+
+        {/* New Game reset button */}
+        <button
+          onClick={resetGame}
+          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer"
+        >
+          New Game
+        </button>
       </main>
     </div>
   );
