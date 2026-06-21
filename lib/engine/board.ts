@@ -136,3 +136,14 @@ export function getValidColumns(board: BoardState): number[] {
   }
   return valid;
 }
+
+// return the first empty row in a column
+export function getDropRow(board: BoardState, col: number): number | null {
+  if (col < 0 || col >= COLS) return null;
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (board[r][col] === 0) {
+      return r;
+    }
+  }
+  return null;
+}

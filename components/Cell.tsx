@@ -1,14 +1,19 @@
 interface CellProps {
   value: number; // 0 = empty, 1 = Red, 2 = Yellow
   isWinning?: boolean;
+  isLanding?: boolean;
 }
 
-export default function Cell({ value, isWinning = false }: CellProps) {
+export default function Cell({
+  value,
+  isWinning = false,
+  isLanding = false,
+}: CellProps) {
   let bgColor = "bg-gray-300"; // Default empty
   if (value === 1) {
-    bgColor = "bg-red-500";
+    bgColor = isLanding ? "bg-red-500/50" : "bg-red-500";
   } else if (value === 2) {
-    bgColor = "bg-yellow-500";
+    bgColor = isLanding ? "bg-yellow-500/50" : "bg-yellow-500";
   }
 
   const winBorder = isWinning ? "border-4 border-green-500" : "";

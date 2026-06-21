@@ -40,23 +40,13 @@ export default function Home() {
           {statusText}
         </div>
 
-        {/* Column buttons */}
-        <div className="flex flex-col items-center select-none">
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {Array.from({ length: 7 }).map((_, colIdx) => (
-              <button
-                key={colIdx}
-                onClick={() => makeMove(colIdx)}
-                disabled={winner !== null}
-                className="w-12 h-8 flex items-center justify-center font-bold bg-gray-200 border border-gray-300 hover:bg-gray-300 rounded text-black text-sm disabled:opacity-50 cursor-pointer"
-              >
-                {colIdx}
-              </button>
-            ))}
-          </div>
-
-          <Board board={board} winningCells={winningCells} />
-        </div>
+        <Board
+          board={board}
+          winningCells={winningCells}
+          currentPlayer={currentPlayer}
+          onColumnClick={makeMove}
+          disabled={winner !== null}
+        />
 
         {/* Undo and Redo Controls */}
         <div className="flex gap-4">
