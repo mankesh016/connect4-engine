@@ -4,8 +4,18 @@ import Board from "@/components/Board";
 import { useGame } from "@/hooks/useGame";
 
 export default function Home() {
-  const { board, currentPlayer, winner, winningCells, makeMove, resetGame } =
-    useGame();
+  const {
+    board,
+    currentPlayer,
+    winner,
+    winningCells,
+    moveHistory,
+    redoStack,
+    makeMove,
+    undo,
+    redo,
+    resetGame,
+  } = useGame();
 
   let statusText = "";
   if (winner === 1) {
@@ -48,10 +58,28 @@ export default function Home() {
           <Board board={board} winningCells={winningCells} />
         </div>
 
+        {/* Undo and Redo Controls */}
+        <div className="flex gap-4">
+          <button
+            onClick={undo}
+            disabled={moveHistory.length === 0}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 text-white font-bold rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
+          >
+            Undo
+          </button>
+          <button
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 text-white font-bold rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
+          >
+            Redo
+          </button>
+        </div>
+
         {/* New Game reset button */}
         <button
           onClick={resetGame}
-          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer"
         >
           New Game
         </button>
