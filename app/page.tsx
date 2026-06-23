@@ -17,6 +17,7 @@ export default function Home() {
     difficulty,
     isThinking,
     setIsThinking,
+    lastMove,
     makeMove,
     undo,
     redo,
@@ -91,6 +92,7 @@ export default function Home() {
           currentPlayer={currentPlayer}
           onColumnClick={makeMove}
           disabled={winner !== null || isThinking}
+          lastMove={lastMove}
         />
 
         {/* Undo and Redo Controls */}

@@ -9,6 +9,7 @@ interface BoardProps {
   currentPlayer: number;
   onColumnClick: (colIndex: number) => void;
   disabled?: boolean;
+  lastMove?: { row: number; col: number } | null;
 }
 
 export default function Board({
@@ -17,6 +18,7 @@ export default function Board({
   currentPlayer,
   onColumnClick,
   disabled = false,
+  lastMove = null,
 }: BoardProps) {
   const { setHoveredCol, getColStatus, getCellProps } = useBoardHover({
     board,
@@ -64,9 +66,19 @@ export default function Board({
         onClick={() => handleColClick(colIdx, isColFull)}
         className={`flex flex-col gap-1 ${cursorClass}`}
       >
-        {Array.from({ length: 6 }).map((_, rowIdx) => (
-          <Cell key={rowIdx} {...getCellProps(rowIdx, colIdx)} />
-        ))}
+        {Array.from({ length: 6 }).map((_, rowIdx) => {
+          const isLastMove =
+            lastMove !== null &&
+            lastMove.row === rowIdx &&
+            lastMove.col === colIdx;
+          return (
+            <Cell
+              key={rowIdx}
+              {...getCellProps(rowIdx, colIdx)}
+              isLastMove={isLastMove}
+            />
+          );
+        })}
       </div>
     );
   };

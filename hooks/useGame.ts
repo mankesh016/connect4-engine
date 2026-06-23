@@ -4,6 +4,7 @@ import {
   dropDisc,
   getWinningCells,
   checkDraw,
+  getDropRow,
   BoardState,
   CellCoords,
 } from "../lib/engine/board";
@@ -23,13 +24,21 @@ export function useGame() {
   const [difficulty, setDifficulty] = useState<number>(3); // 1...5
   const [isThinking, setIsThinking] = useState<boolean>(false);
 
+  const [lastMove, setLastMove] = useState<{ row: number; col: number } | null>(
+    null,
+  );
+
   const makeMove = (colIndex: number) => {
     // ignore clicks if game is over
     if (winner !== null) return;
 
+    const targetRow = getDropRow(board, colIndex);
+    if (targetRow === null) return;
+
     const newBoard = dropDisc(board, colIndex, currentPlayer);
     if (!newBoard) return; // column is full
 
+    setLastMove({ row: targetRow, col: colIndex });
     setMoveHistory((prev) => [...prev, board]);
     setRedoStack([]);
 
@@ -72,6 +81,8 @@ export function useGame() {
   const undo = () => {
     if (moveHistory.length === 0 || isThinking) return;
 
+    setLastMove(null);
+
     const previousBoard = moveHistory[moveHistory.length - 1];
     const newHistory = moveHistory.slice(0, -1);
 
@@ -86,6 +97,8 @@ export function useGame() {
 
   const redo = () => {
     if (redoStack.length === 0 || isThinking) return;
+
+    setLastMove(null);
 
     const nextBoard = redoStack[redoStack.length - 1];
     const newRedo = redoStack.slice(0, -1);
@@ -107,6 +120,7 @@ export function useGame() {
     setMoveHistory([]);
     setRedoStack([]);
     setIsThinking(false);
+    setLastMove(null);
   };
 
   const setGameMode = (mode: GameMode) => {
@@ -127,6 +141,7 @@ export function useGame() {
     setDifficulty,
     isThinking,
     setIsThinking,
+    lastMove,
     makeMove,
     undo,
     redo,
