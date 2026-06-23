@@ -1,6 +1,7 @@
 "use client";
 
 import Board from "@/components/Board";
+import { useAI } from "@/hooks/useAI";
 import { useGame } from "@/hooks/useGame";
 
 export default function Home() {
@@ -11,14 +12,32 @@ export default function Home() {
     winningCells,
     moveHistory,
     redoStack,
+    gameMode,
+    setGameMode,
+    difficulty,
+    isThinking,
+    setIsThinking,
     makeMove,
     undo,
     redo,
     resetGame,
   } = useGame();
 
+  useAI({
+    board,
+    currentPlayer,
+    gameMode,
+    winner,
+    isThinking,
+    setIsThinking,
+    makeMove,
+    difficulty,
+  });
+
   let statusText = "";
-  if (winner === 1) {
+  if (isThinking) {
+    statusText = "AI is Thinking...";
+  } else if (winner === 1) {
     statusText = "Red wins!";
   } else if (winner === 2) {
     statusText = "Yellow wins!";
@@ -35,6 +54,32 @@ export default function Home() {
           Connect 4 Engine
         </h1>
 
+        {/* Game Mode Selector */}
+        <div className="flex gap-4">
+          <button
+            onClick={() => setGameMode("offline")}
+            disabled={isThinking}
+            className={`px-4 py-2 font-bold rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              gameMode === "offline"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
+          >
+            vs Human
+          </button>
+          <button
+            onClick={() => setGameMode("ai")}
+            disabled={isThinking}
+            className={`px-4 py-2 font-bold rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              gameMode === "ai"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-black hover:bg-gray-300"
+            }`}
+          >
+            vs AI
+          </button>
+        </div>
+
         {/* Turn or result status */}
         <div className="text-lg font-semibold text-gray-700" id="game-status">
           {statusText}
@@ -45,21 +90,21 @@ export default function Home() {
           winningCells={winningCells}
           currentPlayer={currentPlayer}
           onColumnClick={makeMove}
-          disabled={winner !== null}
+          disabled={winner !== null || isThinking}
         />
 
         {/* Undo and Redo Controls */}
         <div className="flex gap-4">
           <button
             onClick={undo}
-            disabled={moveHistory.length === 0}
+            disabled={moveHistory.length === 0 || isThinking}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 text-white font-bold rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
           >
             Undo
           </button>
           <button
             onClick={redo}
-            disabled={redoStack.length === 0}
+            disabled={redoStack.length === 0 || isThinking}
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-300 text-white font-bold rounded cursor-pointer disabled:cursor-not-allowed transition-colors"
           >
             Redo

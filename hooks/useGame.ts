@@ -8,6 +8,8 @@ import {
   CellCoords,
 } from "../lib/engine/board";
 
+export type GameMode = "offline" | "ai";
+
 export function useGame() {
   const [board, setBoard] = useState<BoardState>(createBoard());
   // 1 => red (player 1), 2 => yellow (player 2)
@@ -16,6 +18,10 @@ export function useGame() {
   const [winningCells, setWinningCells] = useState<CellCoords[]>([]);
   const [moveHistory, setMoveHistory] = useState<BoardState[]>([]);
   const [redoStack, setRedoStack] = useState<BoardState[]>([]);
+
+  const [gameMode, setGameModeState] = useState<GameMode>("offline");
+  const [difficulty, setDifficulty] = useState<number>(3); // 1...5
+  const [isThinking, setIsThinking] = useState<boolean>(false);
 
   const makeMove = (colIndex: number) => {
     // ignore clicks if game is over
@@ -64,7 +70,7 @@ export function useGame() {
   };
 
   const undo = () => {
-    if (moveHistory.length === 0) return;
+    if (moveHistory.length === 0 || isThinking) return;
 
     const previousBoard = moveHistory[moveHistory.length - 1];
     const newHistory = moveHistory.slice(0, -1);
@@ -79,7 +85,7 @@ export function useGame() {
   };
 
   const redo = () => {
-    if (redoStack.length === 0) return;
+    if (redoStack.length === 0 || isThinking) return;
 
     const nextBoard = redoStack[redoStack.length - 1];
     const newRedo = redoStack.slice(0, -1);
@@ -100,6 +106,12 @@ export function useGame() {
     setWinningCells([]);
     setMoveHistory([]);
     setRedoStack([]);
+    setIsThinking(false);
+  };
+
+  const setGameMode = (mode: GameMode) => {
+    setGameModeState(mode);
+    resetGame();
   };
 
   return {
@@ -109,6 +121,12 @@ export function useGame() {
     winningCells,
     moveHistory,
     redoStack,
+    gameMode,
+    setGameMode,
+    difficulty,
+    setDifficulty,
+    isThinking,
+    setIsThinking,
     makeMove,
     undo,
     redo,
