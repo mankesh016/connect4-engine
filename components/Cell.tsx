@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface CellProps {
   value: number; // 0 = empty, 1 = Red, 2 = Yellow
   isWinning?: boolean;
@@ -5,7 +7,7 @@ interface CellProps {
   isLastMove?: boolean;
 }
 
-export default function Cell({
+function Cell({
   value,
   isWinning = false,
   isLanding = false,
@@ -32,3 +34,5 @@ export default function Cell({
     </div>
   );
 }
+
+export default memo(Cell);

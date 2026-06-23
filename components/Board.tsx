@@ -20,15 +20,16 @@ export default function Board({
   disabled = false,
   lastMove = null,
 }: BoardProps) {
-  const { setHoveredCol, getColStatus, getCellProps } = useBoardHover({
-    board,
-    currentPlayer,
-    disabled,
-    winningCells,
-  });
+  const { hoveredCol, setHoveredCol, getColStatus, getCellProps } =
+    useBoardHover({
+      board,
+      currentPlayer,
+      disabled,
+      winningCells,
+    });
 
   const handleColHover = (colIdx: number) => {
-    if (!disabled) {
+    if (!disabled && hoveredCol !== colIdx) {
       setHoveredCol(colIdx);
     }
   };
