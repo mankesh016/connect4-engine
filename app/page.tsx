@@ -15,6 +15,7 @@ export default function Home() {
     gameMode,
     setGameMode,
     difficulty,
+    setDifficulty,
     isThinking,
     setIsThinking,
     lastMove,
@@ -80,6 +81,35 @@ export default function Home() {
             vs AI
           </button>
         </div>
+
+        {/* Difficulty Selector (Only for vs AI mode) */}
+        {gameMode === "ai" && (
+          <div className="flex items-center gap-2">
+            <span className="text-md font-semibold text-gray-600">
+              AI Difficulty
+            </span>
+            <div className="flex gap-2">
+              {([1, 2, 3, 4, 5] as const).map((level) => {
+                const isSelected = difficulty === level;
+                const isDisabled = moveHistory.length > 0 || isThinking;
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setDifficulty(level)}
+                    disabled={isDisabled}
+                    className={`px-3 py-1 rounded border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isSelected
+                        ? "bg-gray-800 text-white border-gray-950 font-bold underline"
+                        : "bg-white text-black border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Turn or result status */}
         <div className="text-lg font-semibold text-gray-700" id="game-status">

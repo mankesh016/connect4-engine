@@ -49,7 +49,11 @@ export function useAI({
 
       const timer = setTimeout(() => {
         // Run minimax search on latest board
-        const bestMove = getBestMove(boardRef.current, 5, 2);
+        const bestMove = getBestMove(
+          boardRef.current,
+          difficultyRef.current,
+          2,
+        );
 
         setIsThinkingRef.current(false);
         thinkingRef.current = false;

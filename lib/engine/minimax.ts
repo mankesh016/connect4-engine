@@ -7,7 +7,27 @@ import {
 } from "./board";
 import { scoreBoard } from "./heuristic";
 
-const DEFAULT_DEPTH = 5;
+export interface DifficultyConfig {
+  depth: number;
+  randomChance: number;
+}
+
+export function getDifficultyConfig(level: number): DifficultyConfig {
+  switch (level) {
+    case 1:
+      return { depth: 1, randomChance: 0.6 };
+    case 2:
+      return { depth: 2, randomChance: 0.3 };
+    case 3:
+      return { depth: 4, randomChance: 0.0 };
+    case 4:
+      return { depth: 6, randomChance: 0.0 };
+    case 5:
+      return { depth: 9, randomChance: 0.0 };
+    default:
+      return { depth: 4, randomChance: 0.0 }; // Level 3 default
+  }
+}
 
 // Standard Minimax algorithm with Alpha-Beta pruning.
 // aiPlayer (default 2) is the maximizing player.
@@ -92,12 +112,30 @@ export function minimax(
   }
 }
 
-// returns the best move (column index) for the AI
+// returns the best move (column index) for the AI, considering the difficulty
 export function getBestMove(
   board: BoardState,
-  depth: number = DEFAULT_DEPTH,
+  level: number = 3,
   aiPlayer: number = 2,
 ): number {
-  const result = minimax(board, depth, -Infinity, Infinity, true, aiPlayer);
+  const config = getDifficultyConfig(level);
+  const validColumns = getValidColumns(board);
+
+  if (validColumns.length === 0) return -1;
+
+  // level randomness chance
+  if (Math.random() < config.randomChance) {
+    const randomIndex = Math.floor(Math.random() * validColumns.length);
+    return validColumns[randomIndex];
+  }
+
+  const result = minimax(
+    board,
+    config.depth,
+    -Infinity,
+    Infinity,
+    true,
+    aiPlayer,
+  );
   return result.column;
 }
