@@ -50,21 +50,21 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8 text-black">
-      <main className="flex flex-col items-center gap-6">
-        <h1 className="text-3xl font-extrabold tracking-tight">
+    <div className="flex flex-col min-h-screen bg-gray-100 text-black">
+      <header className="flex justify-around items-center w-full p-2 shadow bg-white sticky top-0 z-50">
+        <h1 className="text-2xl font-extrabold tracking-tight">
           Connect 4 Engine
         </h1>
 
         {/* Game Mode Selector */}
-        <div className="flex gap-4">
+        <div className="flex bg-gray-200 p-1 rounded-lg">
           <button
             onClick={() => setGameMode("offline")}
             disabled={isThinking}
-            className={`px-4 py-2 font-bold rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-2 py-1 font-semibold text-sm rounded-md cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               gameMode === "offline"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-black hover:bg-gray-300"
+                ? "bg-white text-black"
+                : "bg-gray-200 text-black/70 hover:text-black"
             }`}
           >
             vs Human
@@ -72,45 +72,26 @@ export default function Home() {
           <button
             onClick={() => setGameMode("ai")}
             disabled={isThinking}
-            className={`px-4 py-2 font-bold rounded cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-2 py-1 font-semibold text-sm rounded-md cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
               gameMode === "ai"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-black hover:bg-gray-300"
+                ? "bg-white text-black"
+                : "bg-gray-200 text-black/70 hover:text-black"
             }`}
           >
             vs AI
           </button>
         </div>
 
-        {/* Difficulty Selector (Only for vs AI mode) */}
-        {gameMode === "ai" && (
-          <div className="flex items-center gap-2">
-            <span className="text-md font-semibold text-gray-600">
-              AI Difficulty
-            </span>
-            <div className="flex gap-2">
-              {([1, 2, 3, 4, 5] as const).map((level) => {
-                const isSelected = difficulty === level;
-                const isDisabled = moveHistory.length > 0 || isThinking;
-                return (
-                  <button
-                    key={level}
-                    onClick={() => setDifficulty(level)}
-                    disabled={isDisabled}
-                    className={`px-3 py-1 rounded border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isSelected
-                        ? "bg-gray-800 text-white border-gray-950 font-bold underline"
-                        : "bg-white text-black border-gray-300 hover:bg-gray-100"
-                    }`}
-                  >
-                    {level}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {/* New Game reset button */}
+        <button
+          onClick={resetGame}
+          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded cursor-pointer"
+        >
+          New Game
+        </button>
+      </header>
 
+      <main className="flex flex-col items-center gap-6 pt-8">
         {/* Turn or result status */}
         <div className="text-lg font-semibold text-gray-700" id="game-status">
           {statusText}
@@ -143,13 +124,34 @@ export default function Home() {
           </button>
         </div>
 
-        {/* New Game reset button */}
-        <button
-          onClick={resetGame}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded cursor-pointer"
-        >
-          New Game
-        </button>
+        {/* Difficulty Selector (Only for vs AI mode) */}
+        {gameMode === "ai" && (
+          <div className="flex items-center mt-4 gap-2">
+            <span className="text-md font-semibold text-gray-600">
+              AI Difficulty
+            </span>
+            <div className="flex gap-2">
+              {([1, 2, 3, 4, 5] as const).map((level) => {
+                const isSelected = difficulty === level;
+                const isDisabled = moveHistory.length > 0 || isThinking;
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setDifficulty(level)}
+                    disabled={isDisabled}
+                    className={`px-3 py-1 rounded border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isSelected
+                        ? "bg-gray-800 text-white border-gray-950 font-bold underline"
+                        : "bg-white text-black border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    {level}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
