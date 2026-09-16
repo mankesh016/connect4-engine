@@ -10,7 +10,6 @@ interface UseAIProps {
   currentPlayer: number;
   gameMode: "offline" | "ai";
   winner: number | "draw" | null;
-  isThinking: boolean;
   setIsThinking: (thinking: boolean) => void;
   makeMove: (col: number) => void;
   difficulty: number;

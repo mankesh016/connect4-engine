@@ -13,13 +13,20 @@ import {
 
 export type GameMode = "offline" | "ai";
 
+// A snapshot of whose turn it was on a given board, so undo/redo can restore
+// both directly instead of re-deriving currentPlayer via flip-counting.
+interface Snapshot {
+  board: BoardState;
+  currentPlayer: number;
+}
+
 export function useGame() {
   const [board, setBoard] = useState<BoardState>(createBoard());
   const [currentPlayer, setCurrentPlayer] = useState<number>(PLAYER.RED);
   const [winner, setWinner] = useState<number | "draw" | null>(null);
   const [winningCells, setWinningCells] = useState<CellCoords[]>([]);
-  const [moveHistory, setMoveHistory] = useState<BoardState[]>([]);
-  const [redoStack, setRedoStack] = useState<BoardState[]>([]);
+  const [moveHistory, setMoveHistory] = useState<Snapshot[]>([]);
+  const [redoStack, setRedoStack] = useState<Snapshot[]>([]);
 
   const [gameMode, setGameModeState] = useState<GameMode>("offline");
   const [difficulty, setDifficulty] = useState<number>(3); // 1...5
@@ -40,7 +47,7 @@ export function useGame() {
     if (!newBoard) return; // column is full
 
     setLastMove({ row: targetRow, col: colIndex });
-    setMoveHistory((prev) => [...prev, board]);
+    setMoveHistory((prev) => [...prev, { board, currentPlayer }]);
     setRedoStack([]);
 
     const winCells = getWinningCells(newBoard, currentPlayer);
@@ -82,35 +89,37 @@ export function useGame() {
   const undo = () => {
     if (moveHistory.length === 0 || isThinking) return;
 
+    // In vs-AI mode, a "turn" is the human's move plus the AI's reply. A
+    // single-ply undo would land back on the AI's turn with the board
+    // already set for it to move on — the useAI effect would immediately
+    // fire again, making Undo look like it did nothing (or worse). Undoing
+    // both plies atomically returns the human to their own previous turn.
+    const steps = gameMode === "ai" ? Math.min(2, moveHistory.length) : 1;
+    const targetIndex = moveHistory.length - steps;
+    const target = moveHistory[targetIndex];
+
     setLastMove(null);
+    setRedoStack((prev) => [...prev, { board, currentPlayer }]);
+    setMoveHistory(moveHistory.slice(0, targetIndex));
+    setBoard(target.board);
+    setCurrentPlayer(target.currentPlayer);
 
-    const previousBoard = moveHistory[moveHistory.length - 1];
-    const newHistory = moveHistory.slice(0, -1);
-
-    // Push current board to redo stack
-    setRedoStack((prev) => [...prev, board]);
-    setMoveHistory(newHistory);
-    setBoard(previousBoard);
-
-    recalculateGameOutcomes(previousBoard);
-    setCurrentPlayer(getOpponent(currentPlayer));
+    recalculateGameOutcomes(target.board);
   };
 
   const redo = () => {
     if (redoStack.length === 0 || isThinking) return;
 
-    setLastMove(null);
-
-    const nextBoard = redoStack[redoStack.length - 1];
+    const target = redoStack[redoStack.length - 1];
     const newRedo = redoStack.slice(0, -1);
 
-    // Push current board to history stack
-    setMoveHistory((prev) => [...prev, board]);
+    setLastMove(null);
+    setMoveHistory((prev) => [...prev, { board, currentPlayer }]);
     setRedoStack(newRedo);
-    setBoard(nextBoard);
+    setBoard(target.board);
+    setCurrentPlayer(target.currentPlayer);
 
-    recalculateGameOutcomes(nextBoard);
-    setCurrentPlayer(getOpponent(currentPlayer));
+    recalculateGameOutcomes(target.board);
   };
 
   const resetGame = () => {

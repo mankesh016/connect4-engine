@@ -31,7 +31,6 @@ export default function Home() {
     currentPlayer,
     gameMode,
     winner,
-    isThinking,
     setIsThinking,
     makeMove,
     difficulty,
