@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createBoard,
   dropDisc,
@@ -20,6 +20,37 @@ interface Snapshot {
   currentPlayer: number;
 }
 
+const STORAGE_KEY = "connect4-state";
+
+interface PersistedState {
+  board: BoardState;
+  currentPlayer: number;
+  winner: number | "draw" | null;
+  winningCells: CellCoords[];
+  moveHistory: Snapshot[];
+  redoStack: Snapshot[];
+  gameMode: GameMode;
+  difficulty: number;
+  lastMove: { row: number; col: number } | null;
+}
+
+// Light structural check, not a full schema validator — good enough to
+// refuse to load anything that isn't shaped like a board, and to fall back
+// to a fresh game rather than crash if the format ever changes.
+function isPersistedState(value: unknown): value is PersistedState {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Array.isArray(v.board) &&
+    typeof v.currentPlayer === "number" &&
+    Array.isArray(v.winningCells) &&
+    Array.isArray(v.moveHistory) &&
+    Array.isArray(v.redoStack) &&
+    (v.gameMode === "offline" || v.gameMode === "ai") &&
+    typeof v.difficulty === "number"
+  );
+}
+
 export function useGame() {
   const [board, setBoard] = useState<BoardState>(createBoard());
   const [currentPlayer, setCurrentPlayer] = useState<number>(PLAYER.RED);
@@ -35,6 +66,86 @@ export function useGame() {
   const [lastMove, setLastMove] = useState<{ row: number; col: number } | null>(
     null,
   );
+
+  // Guards the persist effect below so it can't fire with the pre-load
+  // default state before the restore effect's setters have actually taken
+  // effect. This has to be real state (not a ref flipped inside the restore
+  // effect): both effects run in the same post-mount pass, and a ref
+  // mutated by the first effect would already read `true` by the time the
+  // second one checks it — while that second effect's `board`/`currentPlayer`
+  // closure still holds the stale pre-restore defaults from the render that
+  // scheduled it. Using state forces the persist effect to wait for an
+  // actual re-render (with the restored values already applied) before it
+  // runs again.
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        if (isPersistedState(parsed)) {
+          // Restoring several independent pieces of state from an external
+          // store (localStorage) on mount is one of the few cases React's
+          // own docs call out as a legitimate need for an effect — it can't
+          // be read during render on the server, so it can't be computed
+          // during render without a hydration mismatch. React 18 batches
+          // these into a single re-render regardless of the count, so this
+          // isn't the "effect chain" cascade the rule is otherwise guarding
+          // against; splitting 9 independent useState hooks into one
+          // reducer purely to silence it isn't worth the churn here.
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setBoard(parsed.board);
+          setCurrentPlayer(parsed.currentPlayer);
+          setWinner(parsed.winner);
+          setWinningCells(parsed.winningCells);
+          setMoveHistory(parsed.moveHistory);
+          setRedoStack(parsed.redoStack);
+          setGameModeState(parsed.gameMode);
+          setDifficulty(parsed.difficulty);
+          setLastMove(parsed.lastMove ?? null);
+        }
+      }
+    } catch {
+      // Corrupted JSON, inaccessible storage (private browsing), etc. —
+      // fall back to a fresh game instead of throwing.
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return; // skip the pre-restore initial render
+
+    try {
+      const toSave: PersistedState = {
+        board,
+        currentPlayer,
+        winner,
+        winningCells,
+        moveHistory,
+        redoStack,
+        gameMode,
+        difficulty,
+        lastMove,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch {
+      // Storage full/unavailable — persistence is a nice-to-have, never
+      // let it break gameplay.
+    }
+  }, [
+    hydrated,
+    board,
+    currentPlayer,
+    winner,
+    winningCells,
+    moveHistory,
+    redoStack,
+    gameMode,
+    difficulty,
+    lastMove,
+  ]);
 
   const makeMove = (colIndex: number) => {
     // ignore clicks if game is over
