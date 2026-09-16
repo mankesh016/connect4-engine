@@ -1,12 +1,4 @@
-import {
-  BoardState,
-  checkWin,
-  getValidColumns,
-  dropDisc,
-  checkDraw,
-  getOpponent,
-  PLAYER,
-} from "./board";
+import { BoardState, checkWin, getValidColumns, dropDisc, checkDraw, getOpponent, PLAYER } from "./board";
 import { scoreBoard } from "./heuristic";
 
 export interface DifficultyConfig {
@@ -62,9 +54,7 @@ export function minimax(
 
   // explore center columns first to maximize pruning!
   // column order 3, 2, 4, 1, 5, 0, 6
-  const orderedColumns = [...validColumns].sort(
-    (a, b) => Math.abs(3 - a) - Math.abs(3 - b),
-  );
+  const orderedColumns = [...validColumns].sort((a, b) => Math.abs(3 - a) - Math.abs(3 - b));
 
   if (isMaximizing) {
     let maxScore = -Infinity;
@@ -74,14 +64,7 @@ export function minimax(
       const nextBoard = dropDisc(board, col, aiPlayer);
       if (!nextBoard) continue;
 
-      const result = minimax(
-        nextBoard,
-        depth - 1,
-        alpha,
-        beta,
-        false,
-        aiPlayer,
-      );
+      const result = minimax(nextBoard, depth - 1, alpha, beta, false, aiPlayer);
       if (result.score > maxScore) {
         maxScore = result.score;
         bestColumn = col;
@@ -115,11 +98,7 @@ export function minimax(
 }
 
 // returns the best move (column index) for the AI, considering the difficulty
-export function getBestMove(
-  board: BoardState,
-  level: number = 3,
-  aiPlayer: number = PLAYER.YELLOW,
-): number {
+export function getBestMove(board: BoardState, level: number = 3, aiPlayer: number = PLAYER.YELLOW): number {
   const config = getDifficultyConfig(level);
   const validColumns = getValidColumns(board);
 
@@ -131,13 +110,6 @@ export function getBestMove(
     return validColumns[randomIndex];
   }
 
-  const result = minimax(
-    board,
-    config.depth,
-    -Infinity,
-    Infinity,
-    true,
-    aiPlayer,
-  );
+  const result = minimax(board, config.depth, -Infinity, Infinity, true, aiPlayer);
   return result.column;
 }
