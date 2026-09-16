@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 import { BoardState, PLAYER } from "../lib/engine/board";
-import { getBestMove } from "../lib/engine/minimax";
+import type {
+  AIWorkerRequest,
+  AIWorkerResponse,
+} from "../lib/engine/ai.worker";
 
 interface UseAIProps {
   board: BoardState;
@@ -35,6 +38,21 @@ export function useAI({
   });
 
   const thinkingRef = useRef(false);
+  const workerRef = useRef<Worker | null>(null);
+
+  // Create the minimax worker once for the lifetime of this hook, and
+  // terminate it on unmount so it doesn't keep running in the background.
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL("../lib/engine/ai.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     // Only run AI is not already processing
@@ -47,24 +65,45 @@ export function useAI({
       thinkingRef.current = true;
       setIsThinkingRef.current(true);
 
+      let cancelled = false;
+
       const timer = setTimeout(() => {
-        // Run minimax search on latest board
-        const bestMove = getBestMove(
-          boardRef.current,
-          difficultyRef.current,
-          PLAYER.YELLOW,
-        );
+        const worker = workerRef.current;
+        if (!worker) return;
 
-        setIsThinkingRef.current(false);
-        thinkingRef.current = false;
+        const handleResult = (event: MessageEvent<AIWorkerResponse>) => {
+          worker.removeEventListener("message", handleResult);
+          if (cancelled) return; // board moved on (e.g. an undo) while the worker was thinking
 
-        if (bestMove !== -1) {
-          makeMoveRef.current(bestMove);
-        }
+          setIsThinkingRef.current(false);
+          thinkingRef.current = false;
+
+          const { column } = event.data;
+          if (column !== -1) {
+            makeMoveRef.current(column);
+          }
+        };
+
+        worker.addEventListener("message", handleResult);
+
+        // Run minimax search on the latest board, off the main thread.
+        const request: AIWorkerRequest = {
+          board: boardRef.current,
+          level: difficultyRef.current,
+          aiPlayer: PLAYER.YELLOW,
+        };
+        worker.postMessage(request);
       }, 600);
 
       return () => {
+        cancelled = true;
         clearTimeout(timer);
+        // Don't leave the UI stuck on "AI is Thinking..." if this turn gets
+        // torn down (e.g. undo) before the worker replies.
+        if (thinkingRef.current) {
+          thinkingRef.current = false;
+          setIsThinkingRef.current(false);
+        }
       };
     }
   }, [currentPlayer, gameMode, winner]);
