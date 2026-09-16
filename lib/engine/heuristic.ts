@@ -1,4 +1,4 @@
-import { ROWS, COLS, BoardState } from "./board";
+import { ROWS, COLS, BoardState, getOpponent, PLAYER } from "./board";
 
 // Evaluates a single window of 4 consecutive cells.
 // Scores the window from the perspective of the specified player:
@@ -7,11 +7,11 @@ import { ROWS, COLS, BoardState } from "./board";
 // opponent 3 + 1 empty = -80 (block urgently)
 export function evaluateWindow(window: number[], player: number): number {
   let score = 0;
-  const opponent = player === 1 ? 2 : 1;
+  const opponent = getOpponent(player);
 
   const playerCount = window.filter((cell) => cell === player).length;
   const opponentCount = window.filter((cell) => cell === opponent).length;
-  const emptyCount = window.filter((cell) => cell === 0).length;
+  const emptyCount = window.filter((cell) => cell === PLAYER.EMPTY).length;
 
   if (playerCount === 4) {
     score += 100000;

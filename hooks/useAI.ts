@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { BoardState } from "../lib/engine/board";
+import { BoardState, PLAYER } from "../lib/engine/board";
 import { getBestMove } from "../lib/engine/minimax";
 
 interface UseAIProps {
@@ -40,7 +40,7 @@ export function useAI({
     // Only run AI is not already processing
     if (
       gameMode === "ai" &&
-      currentPlayer === 2 &&
+      currentPlayer === PLAYER.YELLOW &&
       winner === null &&
       !thinkingRef.current
     ) {
@@ -52,7 +52,7 @@ export function useAI({
         const bestMove = getBestMove(
           boardRef.current,
           difficultyRef.current,
-          2,
+          PLAYER.YELLOW,
         );
 
         setIsThinkingRef.current(false);

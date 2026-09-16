@@ -4,6 +4,8 @@ import {
   getValidColumns,
   dropDisc,
   checkDraw,
+  getOpponent,
+  PLAYER,
 } from "./board";
 import { scoreBoard } from "./heuristic";
 
@@ -38,9 +40,9 @@ export function minimax(
   alpha: number,
   beta: number,
   isMaximizing: boolean,
-  aiPlayer: number = 2,
+  aiPlayer: number = PLAYER.YELLOW,
 ): { score: number; column: number } {
-  const opponent = aiPlayer === 1 ? 2 : 1;
+  const opponent = getOpponent(aiPlayer);
 
   // check for terminal states
   if (checkWin(board, aiPlayer)) {
@@ -116,7 +118,7 @@ export function minimax(
 export function getBestMove(
   board: BoardState,
   level: number = 3,
-  aiPlayer: number = 2,
+  aiPlayer: number = PLAYER.YELLOW,
 ): number {
   const config = getDifficultyConfig(level);
   const validColumns = getValidColumns(board);

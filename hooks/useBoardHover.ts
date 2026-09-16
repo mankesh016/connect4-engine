@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { getDropRow } from "../lib/engine/board";
+import { getDropRow, PLAYER, BoardState } from "../lib/engine/board";
 
 interface UseBoardHoverProps {
-  board: number[][];
+  board: BoardState;
   currentPlayer: number;
   disabled: boolean;
   winningCells: [number, number][];
@@ -26,7 +26,7 @@ export function useBoardHover({
 
   // retrieve hover and cursor configuration for a column
   const getColStatus = (colIdx: number) => {
-    const isColFull = board[0][colIdx] !== 0;
+    const isColFull = board[0][colIdx] !== PLAYER.EMPTY;
     const isCurrentHovered = hoveredCol === colIdx && !disabled;
 
     const cursorClass = disabled
@@ -39,7 +39,7 @@ export function useBoardHover({
     let ghostDiscClass = "bg-transparent";
     if (isCurrentHovered && !isColFull) {
       ghostDiscClass =
-        currentPlayer === 1 ? "bg-red-500/60" : "bg-yellow-500/60";
+        currentPlayer === PLAYER.RED ? "bg-red-500/60" : "bg-yellow-500/60";
     }
 
     return {

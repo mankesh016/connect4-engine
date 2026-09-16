@@ -4,9 +4,20 @@ export type CellCoords = [number, number];
 export const ROWS = 6;
 export const COLS = 7;
 
+// Cell/player identifiers used across the engine, hooks, and components.
+export const PLAYER = {
+  EMPTY: 0,
+  RED: 1,
+  YELLOW: 2,
+} as const;
+
+export function getOpponent(player: number): number {
+  return player === PLAYER.RED ? PLAYER.YELLOW : PLAYER.RED;
+}
+
 // Create empty 6x7 board initialized with zeros.
 export function createBoard(): BoardState {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  return Array.from({ length: ROWS }, () => Array(COLS).fill(PLAYER.EMPTY));
 }
 
 // Drops a disc of given player into given column.
@@ -19,7 +30,7 @@ export function dropDisc(
 
   // Search from bottom to up
   for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r][col] === 0) {
+    if (board[r][col] === PLAYER.EMPTY) {
       const newBoard = board.map((row) => [...row]);
       newBoard[r][col] = player;
       return newBoard;
@@ -123,14 +134,14 @@ export function checkDraw(board: BoardState): boolean {
   const validCols = getValidColumns(board);
   if (validCols.length > 0) return false;
 
-  return !checkWin(board, 1) && !checkWin(board, 2);
+  return !checkWin(board, PLAYER.RED) && !checkWin(board, PLAYER.YELLOW);
 }
 
 // return a list of not fully filled columns
 export function getValidColumns(board: BoardState): number[] {
   const valid: number[] = [];
   for (let c = 0; c < COLS; c++) {
-    if (board[0][c] === 0) {
+    if (board[0][c] === PLAYER.EMPTY) {
       valid.push(c);
     }
   }
@@ -141,7 +152,7 @@ export function getValidColumns(board: BoardState): number[] {
 export function getDropRow(board: BoardState, col: number): number | null {
   if (col < 0 || col >= COLS) return null;
   for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r][col] === 0) {
+    if (board[r][col] === PLAYER.EMPTY) {
       return r;
     }
   }

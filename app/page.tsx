@@ -3,6 +3,7 @@
 import Board from "@/components/Board";
 import { useAI } from "@/hooks/useAI";
 import { useGame } from "@/hooks/useGame";
+import { PLAYER } from "@/lib/engine/board";
 
 export default function Home() {
   const {
@@ -39,14 +40,14 @@ export default function Home() {
   let statusText = "";
   if (isThinking) {
     statusText = "AI is Thinking...";
-  } else if (winner === 1) {
+  } else if (winner === PLAYER.RED) {
     statusText = "Red wins!";
-  } else if (winner === 2) {
+  } else if (winner === PLAYER.YELLOW) {
     statusText = "Yellow wins!";
   } else if (winner === "draw") {
     statusText = "It's a draw!";
   } else {
-    statusText = currentPlayer === 1 ? "Red's turn" : "Yellow's turn";
+    statusText = currentPlayer === PLAYER.RED ? "Red's turn" : "Yellow's turn";
   }
 
   return (

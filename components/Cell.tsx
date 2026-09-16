@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { PLAYER } from "@/lib/engine/board";
 
 interface CellProps {
   value: number; // 0 = empty, 1 = Red, 2 = Yellow
@@ -14,9 +15,9 @@ function Cell({
   isLastMove = false,
 }: CellProps) {
   let bgColor = "bg-gray-300"; // Default empty
-  if (value === 1) {
+  if (value === PLAYER.RED) {
     bgColor = isLanding ? "bg-red-500/50" : "bg-red-500";
-  } else if (value === 2) {
+  } else if (value === PLAYER.YELLOW) {
     bgColor = isLanding ? "bg-yellow-500/50" : "bg-yellow-500";
   }
 

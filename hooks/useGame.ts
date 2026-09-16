@@ -5,16 +5,17 @@ import {
   getWinningCells,
   checkDraw,
   getDropRow,
+  getOpponent,
   BoardState,
   CellCoords,
+  PLAYER,
 } from "../lib/engine/board";
 
 export type GameMode = "offline" | "ai";
 
 export function useGame() {
   const [board, setBoard] = useState<BoardState>(createBoard());
-  // 1 => red (player 1), 2 => yellow (player 2)
-  const [currentPlayer, setCurrentPlayer] = useState<number>(1);
+  const [currentPlayer, setCurrentPlayer] = useState<number>(PLAYER.RED);
   const [winner, setWinner] = useState<number | "draw" | null>(null);
   const [winningCells, setWinningCells] = useState<CellCoords[]>([]);
   const [moveHistory, setMoveHistory] = useState<BoardState[]>([]);
@@ -57,17 +58,17 @@ export function useGame() {
     }
 
     setBoard(newBoard);
-    setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+    setCurrentPlayer(getOpponent(currentPlayer));
   };
 
   const recalculateGameOutcomes = (board: BoardState) => {
-    const win1 = getWinningCells(board, 1);
-    const win2 = getWinningCells(board, 2);
+    const win1 = getWinningCells(board, PLAYER.RED);
+    const win2 = getWinningCells(board, PLAYER.YELLOW);
     if (win1.length > 0) {
-      setWinner(1);
+      setWinner(PLAYER.RED);
       setWinningCells(win1);
     } else if (win2.length > 0) {
-      setWinner(2);
+      setWinner(PLAYER.YELLOW);
       setWinningCells(win2);
     } else if (checkDraw(board)) {
       setWinner("draw");
@@ -92,7 +93,7 @@ export function useGame() {
     setBoard(previousBoard);
 
     recalculateGameOutcomes(previousBoard);
-    setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+    setCurrentPlayer(getOpponent(currentPlayer));
   };
 
   const redo = () => {
@@ -109,12 +110,12 @@ export function useGame() {
     setBoard(nextBoard);
 
     recalculateGameOutcomes(nextBoard);
-    setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+    setCurrentPlayer(getOpponent(currentPlayer));
   };
 
   const resetGame = () => {
     setBoard(createBoard());
-    setCurrentPlayer(1);
+    setCurrentPlayer(PLAYER.RED);
     setWinner(null);
     setWinningCells([]);
     setMoveHistory([]);

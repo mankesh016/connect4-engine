@@ -1,11 +1,12 @@
 "use client";
 
 import { useBoardHover } from "@/hooks/useBoardHover";
+import { BoardState, CellCoords } from "@/lib/engine/board";
 import Cell from "./Cell";
 
 interface BoardProps {
-  board: number[][]; // 6 rows x 7 cols
-  winningCells?: [number, number][];
+  board: BoardState;
+  winningCells?: CellCoords[];
   currentPlayer: number;
   onColumnClick: (colIndex: number) => void;
   disabled?: boolean;
